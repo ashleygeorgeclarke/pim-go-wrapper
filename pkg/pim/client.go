@@ -6,13 +6,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // A Client manages communication with the PIM API.
@@ -35,6 +36,7 @@ type Client struct {
 	Categories         *Categories
 	Families           *Families
 	MatrixProducts     *MatrixProducts
+	MatrixDimensions   *MatrixDimensions
 	ExtraFields        *ExtraFields
 	Suppliers          *Suppliers
 	ProductUnits       *ProductUnits
@@ -65,6 +67,7 @@ func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
 	c.Categories = (*Categories)(&c.common)
 	c.Families = (*Families)(&c.common)
 	c.MatrixProducts = (*MatrixProducts)(&c.common)
+	c.MatrixDimensions = (*MatrixDimensions)(&c.common)
 	c.Suppliers = (*Suppliers)(&c.common)
 	c.ProductUnits = (*ProductUnits)(&c.common)
 	return c
@@ -90,6 +93,8 @@ func NewAPIClient(baseURL *url.URL, httpCli *http.Client, userAgent string) *Cli
 	c.Brands = (*Brands)(&c.common)
 	c.Categories = (*Categories)(&c.common)
 	c.Families = (*Families)(&c.common)
+	c.MatrixProducts = (*MatrixProducts)(&c.common)
+	c.MatrixDimensions = (*MatrixDimensions)(&c.common)
 	c.ExtraFields = (*ExtraFields)(&c.common)
 	c.Suppliers = (*Suppliers)(&c.common)
 	c.ProductUnits = (*ProductUnits)(&c.common)
