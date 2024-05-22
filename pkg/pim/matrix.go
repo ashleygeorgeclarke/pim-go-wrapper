@@ -80,7 +80,7 @@ func (s *MatrixProducts) Read(ctx context.Context, matrixProductIDs, productIDs 
 	return dataResp, resp, err
 }
 
-func (s *Products) ReadProductsWithVariations(ctx context.Context, opts *ListOptions) (*[]ProductWithVariations, *http.Response, error) {
+func (s *Product) ReadProductsWithVariations(ctx context.Context, opts *ListOptions) (*[]ProductWithVariations, *http.Response, error) {
 	urlStr := "matrix/product/with-variations"
 	u, err := addOptions(urlStr, opts)
 	if err != nil {

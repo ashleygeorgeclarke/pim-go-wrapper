@@ -8,12 +8,56 @@ import (
 )
 
 type (
-	Products service
-	Product  struct {
+	ProductModel struct {
 		ID int `json:"id,omitempty"`
 		ProductRequest
 	}
-
+	Product struct {
+		service
+		Path           string
+		LinkedProducts ProductLinkedProducts
+		Bulk           ProductBulk
+		Codes          ProductCodes
+		Deleted        ProductDeleted
+	}
+	ProductDeleted struct {
+		Ids ProductDeletedIds
+	}
+	ProductDeletedIds struct {
+		service
+		Path string
+	}
+	ProductLinkedProducts struct {
+		service
+		Path string
+		Bulk ProductLinkedProductsBulk
+	}
+	ProductLinkedProductsBulk struct {
+		service
+		Path string
+	}
+	ProductProductId struct {
+		service
+		Path           string
+		LinkedProducts ProductProductIdLinkedProducts
+	}
+	ProductBulk struct {
+		service
+		Path string
+		Get  ProductBulkGet
+	}
+	ProductBulkGet struct {
+		service
+		Path string
+	}
+	ProductCodes struct {
+		service
+		Path string
+	}
+	ProductProductIdLinkedProducts struct {
+		service
+		Path string
+	}
 	BulkUpdateProductRequestItem struct {
 		ResourceID uint `json:"resourceId"`
 		ProductRequest
@@ -102,9 +146,14 @@ type (
 
 		*ProductAttributes
 	}
+
+	AutoCodes struct {
+		NextCode  int `json:"nextCode"`
+		NextCode2 int `json:"nextCode2"`
+	}
 )
 
-func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *http.Response, error) {
+func (s *Product) Read(ctx context.Context, opts *ListOptions) (*[]Product, *http.Response, error) {
 	urlStr := "product"
 	u, err := addOptions(urlStr, opts)
 	if err != nil {
@@ -121,7 +170,7 @@ func (s *Products) Read(ctx context.Context, opts *ListOptions) (*[]Product, *ht
 	return dataResp, resp, err
 }
 
-func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
+func (s *Product) ReadByIDs(ctx context.Context, ids []string, opts *ListOptions) (*[]Product, *http.Response, error) {
 	urlString := fmt.Sprintf("product/%s", strings.Join(ids, ";"))
 	u, err := addOptions(urlString, opts)
 	if err != nil {
@@ -138,7 +187,7 @@ func (s *Products) ReadByIDs(ctx context.Context, ids []string, opts *ListOption
 	return dataResp, resp, err
 }
 
-func (s *Products) ReadAdditionalGroups(ctx context.Context, ids []string, opts PaginationParameters) (*[]ProductAdditionalGroup, *http.Response, error) {
+func (s *Product) ReadAdditionalGroups(ctx context.Context, ids []string, opts PaginationParameters) (*[]ProductAdditionalGroup, *http.Response, error) {
 	urlStr := fmt.Sprintf("product/%s/additional-groups", strings.Join(ids, ";"))
 	u, err := addOptions(urlStr, &ListOptions{PaginationParameters: &opts})
 	if err != nil {
@@ -155,7 +204,7 @@ func (s *Products) ReadAdditionalGroups(ctx context.Context, ids []string, opts 
 	return &dataResp.Results, resp, err
 }
 
-func (s *Products) Create(ctx context.Context, product *ProductRequest) (*IDResponse, *http.Response, error) {
+func (s *Product) Create(ctx context.Context, product *ProductRequest) (*IDResponse, *http.Response, error) {
 	u := "product"
 
 	req, err := s.client.NewRequest(http.MethodPost, u, product)
@@ -168,7 +217,7 @@ func (s *Products) Create(ctx context.Context, product *ProductRequest) (*IDResp
 	return id, resp, err
 }
 
-func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
+func (s *Product) CreateBulk(ctx context.Context, products []Product) (*BulkResponseWithResults, *http.Response, error) {
 	u := "product/bulk"
 
 	type BulkProductRequest struct {
@@ -184,7 +233,7 @@ func (s *Products) CreateBulk(ctx context.Context, products []Product) (*BulkRes
 	return res, resp, err
 }
 
-func (s *Products) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkReadProductResponse, *http.Response, error) {
+func (s *Product) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkReadProductResponse, *http.Response, error) {
 	u := "product/bulk/get"
 
 	req, err := s.client.NewRequest(http.MethodPost, u, BulkReadRequest{Requests: requests})
@@ -197,7 +246,7 @@ func (s *Products) ReadBulk(ctx context.Context, requests []ListOptions) (*BulkR
 	return res, resp, err
 }
 
-func (s *Products) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
+func (s *Product) Update(ctx context.Context, productID int, product *Product) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
 	req, err := s.client.NewRequest(http.MethodPut, u, product)
@@ -215,7 +264,7 @@ type BulkUpdateProductRequest struct {
 	Requests []BulkUpdateProductRequestItem
 }
 
-func (s *Products) UpdateBulk(ctx context.Context, products []BulkUpdateProductRequestItem) (*BulkResponseWithResults, *http.Response, error) {
+func (s *Product) UpdateBulk(ctx context.Context, products []BulkUpdateProductRequestItem) (*BulkResponseWithResults, *http.Response, error) {
 	u := "product/bulk"
 
 	req, err := s.client.NewRequest(http.MethodPut, u, BulkUpdateProductRequest{Requests: products})
@@ -232,7 +281,7 @@ type UpdateProductTypeRequest struct {
 	Type string `json:"type"`
 }
 
-func (s *Products) UpdateType(ctx context.Context, productID int, productType string) (*IDResponse, *http.Response, error) {
+func (s *Product) UpdateType(ctx context.Context, productID int, productType string) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
 	t := UpdateProductTypeRequest{Type: productType}
@@ -251,7 +300,7 @@ type UpdateProductTypeBulkRequest struct {
 	UpdateProductTypeRequest
 }
 
-func (s *Products) UpdateTypeBulk(ctx context.Context, productTypeRequests []UpdateProductTypeBulkRequest) (*BulkResponseWithResults, *http.Response, error) {
+func (s *Product) UpdateTypeBulk(ctx context.Context, productTypeRequests []UpdateProductTypeBulkRequest) (*BulkResponseWithResults, *http.Response, error) {
 	u := "product/bulk"
 
 	type bulkUpdateProductTypeRequest struct {
@@ -268,7 +317,7 @@ func (s *Products) UpdateTypeBulk(ctx context.Context, productTypeRequests []Upd
 	return res, resp, err
 }
 
-func (s *Products) Delete(ctx context.Context, productID int) (*IDResponse, *http.Response, error) {
+func (s *Product) Delete(ctx context.Context, productID int) (*IDResponse, *http.Response, error) {
 	u := fmt.Sprintf("product/%d", productID)
 
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil)

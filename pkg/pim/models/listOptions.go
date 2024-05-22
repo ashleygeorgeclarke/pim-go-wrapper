@@ -1,4 +1,4 @@
-package pim
+package models
 
 import (
 	"encoding/json"
@@ -83,7 +83,7 @@ func NewSortingParameter(selector string, desc bool, language string) *SortingPa
 // must be a struct whose fields may contain "url" tags.
 func addOptions(s string, opts *ListOptions) (*url.URL, error) {
 	if opts == nil {
-		return &url.URL{Path: s}, nil
+		return nil, nil
 	}
 
 	u, err := url.Parse(s)

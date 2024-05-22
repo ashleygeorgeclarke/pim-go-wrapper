@@ -29,7 +29,7 @@ type Client struct {
 	common service
 	// Services used for talking to different parts of the PIM API.
 	WarehouseLocations *WarehouseLocations
-	Products           *Products
+	Product            Product
 	Groups             *Groups
 	Attributes         *Attributes
 	Brands             *Brands
@@ -48,30 +48,30 @@ type Client struct {
 // Deprecated: NewClient exists for historical compatibility
 // and should not be used. To create the new client
 // use the NewAPIClient with the user agent parameter.
-func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
-	c := &Client{
-		baseURL:   baseURL,
-		UserAgent: "pim-wrapper",
-	}
-	if httpCli != nil {
-		c.httpClient = httpCli
-	} else {
-		c.httpClient = getDefaultHTTPClient()
-	}
-	c.common.client = c
-	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
-	c.Products = (*Products)(&c.common)
-	c.Groups = (*Groups)(&c.common)
-	c.Attributes = (*Attributes)(&c.common)
-	c.Brands = (*Brands)(&c.common)
-	c.Categories = (*Categories)(&c.common)
-	c.Families = (*Families)(&c.common)
-	c.MatrixProducts = (*MatrixProducts)(&c.common)
-	c.MatrixDimensions = (*MatrixDimensions)(&c.common)
-	c.Suppliers = (*Suppliers)(&c.common)
-	c.ProductUnits = (*ProductUnits)(&c.common)
-	return c
-}
+// func NewClient(baseURL *url.URL, httpCli *http.Client) *Client {
+// 	c := &Client{
+// 		baseURL:   baseURL,
+// 		UserAgent: "pim-wrapper",
+// 	}
+// 	if httpCli != nil {
+// 		c.httpClient = httpCli
+// 	} else {
+// 		c.httpClient = getDefaultHTTPClient()
+// 	}
+// 	c.common.client = c
+// 	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
+// 	c.Products = (*Product)(&c.common)
+// 	c.Groups = (*Groups)(&c.common)
+// 	c.Attributes = (*Attributes)(&c.common)
+// 	c.Brands = (*Brands)(&c.common)
+// 	c.Categories = (*Categories)(&c.common)
+// 	c.Families = (*Families)(&c.common)
+// 	c.MatrixProducts = (*MatrixProducts)(&c.common)
+// 	c.MatrixDimensions = (*MatrixDimensions)(&c.common)
+// 	c.Suppliers = (*Suppliers)(&c.common)
+// 	c.ProductUnits = (*ProductUnits)(&c.common)
+// 	return c
+// }
 
 // NewAPIClient returns a new PIM API client. If a nil httpClient is
 // provided, a wrapper's default http.Client will be used.
@@ -87,7 +87,32 @@ func NewAPIClient(baseURL *url.URL, httpCli *http.Client, userAgent string) *Cli
 	}
 	c.common.client = c
 	c.WarehouseLocations = (*WarehouseLocations)(&c.common)
-	c.Products = (*Products)(&c.common)
+	c.Product = Product{
+		Path:    "product",
+		service: c.common,
+		LinkedProducts: ProductLinkedProducts{
+			Path:    "product/linked-products",
+			service: c.common,
+			Bulk: ProductLinkedProductsBulk{
+				Path:    "product/linked-products/bulk",
+				service: c.common,
+			},
+		},
+		Codes: ProductCodes{
+			Path:    "product/codes",
+			service: c.common,
+		},
+		Bulk: ProductBulk{
+			Path:    "product/bulk",
+			service: c.common,
+		},
+		Deleted: ProductDeleted{
+			Ids: ProductDeletedIds{
+				Path:    "product/deleted/ids",
+				service: c.common,
+			},
+		},
+	}
 	c.Groups = (*Groups)(&c.common)
 	c.Attributes = (*Attributes)(&c.common)
 	c.Brands = (*Brands)(&c.common)
@@ -215,4 +240,13 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 	return req, nil
+}
+
+type BulkRequest struct {
+	Requests any `json:"requests"`
+}
+
+// create a function that can take any struct and return it wrapped in a key "requests"
+func createBulkRequestStruct(data interface{}) *BulkRequest {
+	return &BulkRequest{Requests: data}
 }
